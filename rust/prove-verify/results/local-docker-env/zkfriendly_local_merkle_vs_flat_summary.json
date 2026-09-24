@@ -1,0 +1,306 @@
+{
+  "meta": {
+    "type": "zk-friendly",
+    "N": 10,
+    "totals": [
+      8,
+      16,
+      32,
+      64
+    ],
+    "used": [
+      1,
+      2,
+      4,
+      8,
+      16
+    ],
+    "timestampIso": "2026-09-23T15:17:08.104Z"
+  },
+  "merkle": {
+    "8": {
+      "1": {
+        "avgWitnessMs": 1.974279,
+        "avgProveMs": 57.958421,
+        "avgProverMs": 59.932700000000004,
+        "avgVerifyMs": 1.1219959000000002,
+        "successfulIters": 10
+      },
+      "2": {
+        "avgWitnessMs": 2.6103083000000002,
+        "avgProveMs": 107.6853251,
+        "avgProverMs": 110.2956334,
+        "avgVerifyMs": 1.1560708,
+        "successfulIters": 10
+      },
+      "4": {
+        "avgWitnessMs": 4.896058299999999,
+        "avgProveMs": 200.35036269999998,
+        "avgProverMs": 205.24642099999997,
+        "avgVerifyMs": 1.7452166000000002,
+        "successfulIters": 10
+      },
+      "8": {
+        "avgWitnessMs": 8.213370900000001,
+        "avgProveMs": 389.6337585,
+        "avgProverMs": 397.8471294,
+        "avgVerifyMs": 1.9734582,
+        "successfulIters": 10
+      }
+    },
+    "16": {
+      "1": {
+        "avgWitnessMs": 2.7168542999999996,
+        "avgProveMs": 53.1147667,
+        "avgProverMs": 55.831621,
+        "avgVerifyMs": 1.0614999,
+        "successfulIters": 10
+      },
+      "2": {
+        "avgWitnessMs": 7.407837699999999,
+        "avgProveMs": 98.53087939999999,
+        "avgProverMs": 105.93871709999999,
+        "avgVerifyMs": 1.6320166999999999,
+        "successfulIters": 10
+      },
+      "4": {
+        "avgWitnessMs": 5.5176209,
+        "avgProveMs": 223.27795430000006,
+        "avgProverMs": 228.79557520000006,
+        "avgVerifyMs": 1.6258374,
+        "successfulIters": 10
+      },
+      "8": {
+        "avgWitnessMs": 9.748287300000001,
+        "avgProveMs": 467.2316462,
+        "avgProverMs": 476.9799335,
+        "avgVerifyMs": 2.0250749,
+        "successfulIters": 10
+      },
+      "16": {
+        "avgWitnessMs": 16.7654168,
+        "avgProveMs": 880.2140421000001,
+        "avgProverMs": 896.9794589000002,
+        "avgVerifyMs": 2.2888332,
+        "successfulIters": 10
+      }
+    },
+    "32": {
+      "1": {
+        "avgWitnessMs": 2.0980499999999997,
+        "avgProveMs": 70.0107707,
+        "avgProverMs": 72.1088207,
+        "avgVerifyMs": 1.2759125,
+        "successfulIters": 10
+      },
+      "2": {
+        "avgWitnessMs": 3.5960042000000003,
+        "avgProveMs": 123.1248793,
+        "avgProverMs": 126.7208835,
+        "avgVerifyMs": 1.4283711,
+        "successfulIters": 10
+      },
+      "4": {
+        "avgWitnessMs": 5.711145800000001,
+        "avgProveMs": 239.8788334,
+        "avgProverMs": 245.5899792,
+        "avgVerifyMs": 1.5806124999999998,
+        "successfulIters": 10
+      },
+      "8": {
+        "avgWitnessMs": 21.1977916,
+        "avgProveMs": 415.738825,
+        "avgProverMs": 436.93661660000004,
+        "avgVerifyMs": 1.2992749,
+        "successfulIters": 10
+      },
+      "16": {
+        "avgWitnessMs": 14.1104874,
+        "avgProveMs": 814.2895505,
+        "avgProverMs": 828.4000379,
+        "avgVerifyMs": 1.5394206999999998,
+        "successfulIters": 10
+      }
+    },
+    "64": {
+      "1": {
+        "avgWitnessMs": 6.8916583000000005,
+        "avgProveMs": 68.577125,
+        "avgProverMs": 75.4687833,
+        "avgVerifyMs": 1.0782167999999999,
+        "successfulIters": 10
+      },
+      "2": {
+        "avgWitnessMs": 3.2778417000000006,
+        "avgProveMs": 122.22366670000001,
+        "avgProverMs": 125.5015084,
+        "avgVerifyMs": 1.1435375,
+        "successfulIters": 10
+      },
+      "4": {
+        "avgWitnessMs": 5.4988375000000005,
+        "avgProveMs": 259.31324170000005,
+        "avgProverMs": 264.8120792,
+        "avgVerifyMs": 1.4780126,
+        "successfulIters": 10
+      },
+      "8": {
+        "avgWitnessMs": 18.0162542,
+        "avgProveMs": 533.6240335,
+        "avgProverMs": 551.6402877,
+        "avgVerifyMs": 1.9837584000000004,
+        "successfulIters": 10
+      },
+      "16": {
+        "avgWitnessMs": 30.097425199999996,
+        "avgProveMs": 1016.3487670000001,
+        "avgProverMs": 1046.4461922,
+        "avgVerifyMs": 2.0750249999999997,
+        "successfulIters": 10
+      }
+    }
+  },
+  "flat": {
+    "8": {
+      "1": {
+        "avgWitnessMs": 2.5156248,
+        "avgProveMs": 105.41499150000001,
+        "avgProverMs": 107.93061630000001,
+        "avgVerifyMs": 1.1452627,
+        "successfulIters": 10
+      },
+      "2": {
+        "avgWitnessMs": 2.5390625,
+        "avgProveMs": 106.266196,
+        "avgProverMs": 108.8052585,
+        "avgVerifyMs": 1.2723041,
+        "successfulIters": 10
+      },
+      "4": {
+        "avgWitnessMs": 2.6022790999999996,
+        "avgProveMs": 97.5031084,
+        "avgProverMs": 100.1053875,
+        "avgVerifyMs": 1.4161792,
+        "successfulIters": 10
+      },
+      "8": {
+        "avgWitnessMs": 3.056354200000001,
+        "avgProveMs": 96.8258208,
+        "avgProverMs": 99.882175,
+        "avgVerifyMs": 1.7164417,
+        "successfulIters": 10
+      }
+    },
+    "16": {
+      "1": {
+        "avgWitnessMs": 3.5368582,
+        "avgProveMs": 145.9912627,
+        "avgProverMs": 149.5281209,
+        "avgVerifyMs": 1.0719876999999998,
+        "successfulIters": 10
+      },
+      "2": {
+        "avgWitnessMs": 4.8178541,
+        "avgProveMs": 183.1097792,
+        "avgProverMs": 187.9276333,
+        "avgVerifyMs": 1.5768834,
+        "successfulIters": 10
+      },
+      "4": {
+        "avgWitnessMs": 4.3456415,
+        "avgProveMs": 200.78122950000002,
+        "avgProverMs": 205.12687100000002,
+        "avgVerifyMs": 1.5844456999999998,
+        "successfulIters": 10
+      },
+      "8": {
+        "avgWitnessMs": 4.404795900000001,
+        "avgProveMs": 194.2651168,
+        "avgProverMs": 198.6699127,
+        "avgVerifyMs": 1.8069375,
+        "successfulIters": 10
+      },
+      "16": {
+        "avgWitnessMs": 4.582737600000001,
+        "avgProveMs": 174.9171167,
+        "avgProverMs": 179.4998543,
+        "avgVerifyMs": 2.2240999,
+        "successfulIters": 10
+      }
+    },
+    "32": {
+      "1": {
+        "avgWitnessMs": 7.8988248,
+        "avgProveMs": 378.6772042,
+        "avgProverMs": 386.576029,
+        "avgVerifyMs": 1.5894833,
+        "successfulIters": 10
+      },
+      "2": {
+        "avgWitnessMs": 8.0754291,
+        "avgProveMs": 368.20336269999996,
+        "avgProverMs": 376.27879179999996,
+        "avgVerifyMs": 1.7115543,
+        "successfulIters": 10
+      },
+      "4": {
+        "avgWitnessMs": 6.1337874,
+        "avgProveMs": 341.5558418,
+        "avgProverMs": 347.6896292,
+        "avgVerifyMs": 1.4584624999999998,
+        "successfulIters": 10
+      },
+      "8": {
+        "avgWitnessMs": 7.821558499999999,
+        "avgProveMs": 378.1450416,
+        "avgProverMs": 385.9666001,
+        "avgVerifyMs": 2.0155335,
+        "successfulIters": 10
+      },
+      "16": {
+        "avgWitnessMs": 7.025162400000001,
+        "avgProveMs": 340.0529419,
+        "avgProverMs": 347.0781043,
+        "avgVerifyMs": 2.0839749999999997,
+        "successfulIters": 10
+      }
+    },
+    "64": {
+      "1": {
+        "avgWitnessMs": 21.381741599999998,
+        "avgProveMs": 774.288417,
+        "avgProverMs": 795.6701585999999,
+        "avgVerifyMs": 1.801979,
+        "successfulIters": 10
+      },
+      "2": {
+        "avgWitnessMs": 10.6167749,
+        "avgProveMs": 589.0615213,
+        "avgProverMs": 599.6782962,
+        "avgVerifyMs": 1.2005499,
+        "successfulIters": 10
+      },
+      "4": {
+        "avgWitnessMs": 19.462195799999996,
+        "avgProveMs": 782.6967128999999,
+        "avgProverMs": 802.1589086999999,
+        "avgVerifyMs": 2.1799206999999994,
+        "successfulIters": 10
+      },
+      "8": {
+        "avgWitnessMs": 20.989404200000003,
+        "avgProveMs": 755.8571625999999,
+        "avgProverMs": 776.8465667999999,
+        "avgVerifyMs": 8.542245699999999,
+        "successfulIters": 10
+      },
+      "16": {
+        "avgWitnessMs": 24.533608499999996,
+        "avgProveMs": 749.8094419,
+        "avgProverMs": 774.3430504,
+        "avgVerifyMs": 2.6427168000000005,
+        "successfulIters": 10
+      }
+    }
+  }
+}

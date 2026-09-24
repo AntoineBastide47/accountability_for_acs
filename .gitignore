@@ -52,6 +52,10 @@ yarn-error.log*
 .npm/
 .pnpm-store/
 
+# ─── Benchmark per-iteration files (inputs, witnesses, proofs) ───────────────
+*iter_[0-9][0-9][0-9][0-9]/
+*.wtns
+
 # ─── Logs / temp ─────────────────────────────────────────────────────────────
 *.log
 *.tmp
@@ -61,3 +65,4 @@ yarn-error.log*
 .env
 .env.*
 !.env.example
+INFO.md

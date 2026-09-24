@@ -1,0 +1,54 @@
+{
+  "meta": {
+    "type": "zk-friendly",
+    "variant": "prove_verify_no_cft",
+    "N": 10,
+    "credentialMode": "init_once_per_show_refresh",
+    "timestampIso": "2026-09-23T14:39:25.758Z"
+  },
+  "results": {
+    "successfulIters": 10
+  },
+  "avgMs": {
+    "witness": 13.9829748,
+    "prove": 585.0767043000002,
+    "verify": 1.1775582000000002
+  },
+  "statsMs": {
+    "witness": {
+      "minMs": 12.119416,
+      "maxMs": 17.402917,
+      "avgMs": 13.9829748,
+      "medianMs": 13.331354000000001,
+      "p95Ms": 17.402917
+    },
+    "prove": {
+      "minMs": 496.64937399999997,
+      "maxMs": 667.4327920000001,
+      "avgMs": 585.0767043000002,
+      "medianMs": 587.535125,
+      "p95Ms": 667.4327920000001
+    },
+    "verify": {
+      "minMs": 1.035958,
+      "maxMs": 1.477584,
+      "avgMs": 1.1775582000000002,
+      "medianMs": 1.084396,
+      "p95Ms": 1.477584
+    },
+    "proverTotal": {
+      "minMs": 512.993916,
+      "maxMs": 680.1995000000001,
+      "avgMs": 599.0596791,
+      "medianMs": 600.289438,
+      "p95Ms": 680.1995000000001
+    },
+    "fullCycle": {
+      "minMs": 514.056541,
+      "maxMs": 681.364541,
+      "avgMs": 600.2372373000001,
+      "medianMs": 601.487938,
+      "p95Ms": 681.364541
+    }
+  }
+}

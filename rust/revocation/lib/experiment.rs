@@ -260,7 +260,7 @@ fn run_scenario(
         set_size,
         recurring_pct,
         &mut ctx.rng,
-    );
+    )?;
 
     let timing = match benchmark {
         Benchmark::DirectDecrypt => cft::bench_direct_decrypt(&ctx.poseidon, &batch, &ctx.keys)?,

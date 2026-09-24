@@ -5,7 +5,7 @@ verify. Rust port of `../../../prove-verify/zk-friendly/`.
 
 ## Setup
 
-Needs `circom`, rapidsnark `prover` and the `snarkjs` CLI on `PATH`, plus
+Needs Rust 1.89 or newer, `circom`, rapidsnark `prover` and the `snarkjs` CLI on `PATH`, plus
 `circomlib`'s circuit sources and the powers-of-tau file.
 
 ```bash
@@ -37,17 +37,21 @@ the Node stack's invocations still work.
 | `BENCH_N` | `--n` | `10` | Measured iterations |
 | `BENCH_WARMUP` | `--warmup` | `1` | Discarded iterations |
 | `BENCH_VERIFY_WARMUP` | `--verify-warmup` | `0` | Extra verify calls on the warm-up iteration |
-| `REVOC_LOG2_LIST` | `--revoc-log2` | `12,16,20,24` | Revocation population scales |
+| `REVOC_LOG2_LIST` / `REVOC_LOG2` | `--revoc-log2` | `12,16,20,24` | Revocation population scales; `REVOC_LOG2_LIST` takes precedence |
 | `REVOC_BITS_PER_LEAF` | `--bits-per-leaf` | `253` | Status-list bits per leaf |
 | `REVOC_SLOT` | `--revoc-slot` | `14` | Attribute slot holding the revocation index |
 | `TOTAL_ATTRS` | `--totals` | `8,16,32,64` | merkle-vs-flat: credential sizes \(n\) |
 | `USED_ATTRS` | `--used` | `1,2,4,8,16` | merkle-vs-flat: disclosed counts \(k\) (skipped when \(k>n\)) |
-| `KEEP_ARTIFACTS` | `--keep-artifacts` | off | Keep per-iteration files |
+| `KEEP_ARTIFACTS` | `--keep-artifacts` | off | Keep per-iteration files (the revocation sweep cleans after each scale) |
 | `CIRCOM_BIN` / `CIRCOM` | — | `circom` | circom binary |
 | `RAPIDSNARK_BIN` | — | `prover` | rapidsnark binary |
 | `SNARKJS_BIN` | — | `snarkjs` | snarkjs CLI |
 | `CIRCOM_LIB_PATH` | — | `circom-libs` | circom `-l` include root |
 | `ZK_FRIENDLY_ROOT` | — | crate dir | Overrides where benchmark folders are looked up |
+
+Boolean environment options accept `1`/`0` and `true`/`false`. The
+Merkle-versus-flat sweep accepts `--quiet` for compatibility and `--compact`
+to hide per-point sample statistics.
 
 | Folder | Role |
 |--------|------|
@@ -100,12 +104,16 @@ bash scripts/clean.sh --all    # the above + target/
 - **Verification moved in-process.** `snarkjs.groth16.verify` is replaced by
   `lib/groth16.rs`, which reads the same `vkey-*.json` / `proof.json` /
   `public.json` encodings and evaluates the pairing check with `arkworks`. This
-  is the one measurement that is not comparable one-to-one with the Node
-  numbers: the reported `verify` time is now a Rust verifier's, not snarkjs'.
-  Witness generation and proving are unchanged external binaries, so those
-  numbers stay comparable.
+  changes the implementation measured by `verify`.
+- **Witness timing includes Rust work in the presentation benchmarks.** Input
+  preparation, signing and JSON output run inside the `witness` timer along
+  with the unchanged external witness calculator. The Merkle-versus-flat
+  sweep prepares inputs before starting that timer. `prove` still measures
+  the external rapidsnark prover.
 - **The verification key is parsed once**, and `e(α, β)` with it; the timed
-  region is the pairing check alone, as it was in the JS.
+  region includes the public-input MSM and pairing equation. The presentation
+  benchmarks parse and validate proofs and public inputs before that timer.
+  The Merkle-versus-flat sweep includes parsing and validation in `verify`.
 - **`circomlib` is a circuit dependency**, not a JavaScript one. It is fetched
   into `circom-libs/` instead of `node_modules/`.
 - **Commands are spawned with an argument vector**, not through a shell, so the

@@ -23,7 +23,7 @@ const BITS_PER_LEAF: u32 = 253;
 #[command(about = "Longfellow prove/verify benchmark for CFT + packed status-list revocation")]
 struct Args {
     /// Population scales as log2.
-    #[arg(long, env = "REVOC_LOG2_LIST", value_delimiter = ',', default_values_t = [12u32, 16, 20, 24])]
+    #[arg(long, env = if std::env::var_os("REVOC_LOG2_LIST").is_some() { "REVOC_LOG2_LIST" } else { "REVOC_LOG2" }, value_delimiter = ',', default_values_t = [12u32, 16, 20, 24])]
     revoc_log2: Vec<u32>,
     /// Google Benchmark filter regex.
     #[arg(long, env = "BENCH_FILTER")]
@@ -34,14 +34,14 @@ struct Args {
     #[arg(
         long = "repetitions",
         visible_alias = "n",
-        env = "BENCH_N",
+        env = if std::env::var_os("BENCH_N").is_some() { "BENCH_N" } else { "BENCH_REPETITIONS" },
         default_value_t = 10
     )]
     repetitions: usize,
     #[arg(long = "min_time", env = "BENCH_MIN_TIME", default_value = "0.05s")]
     min_time: String,
-    /// Summary directory; relative paths resolve against the stack root.
-    #[arg(long = "out-dir", env = "ARTIFACTS_DIR")]
+    /// Summary directory relative to the working directory; ARTIFACTS_DIR is relative to the stack root.
+    #[arg(long = "out-dir")]
     out_dir: Option<PathBuf>,
 }
 

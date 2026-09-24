@@ -19,7 +19,7 @@ fn main() -> Result<()> {
 
     let mut ctx = Context::new();
     for pct in [0.1, 0.5] {
-        let batch = cft::build_batch(&ctx.poseidon, ctx.keys.pk_ag, 100, pct, &mut ctx.rng);
+        let batch = cft::build_batch(&ctx.poseidon, ctx.keys.pk_ag, 100, pct, &mut ctx.rng)?;
         cft::bench_direct_decrypt(&ctx.poseidon, &batch, &ctx.keys)?;
         let linked = cft::bench_link_decrypt(&ctx.poseidon, &batch, &ctx.keys, &mut ctx.rng)?;
         if linked.n_after_filter != batch.n_recurring {

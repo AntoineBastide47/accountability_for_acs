@@ -1,0 +1,52 @@
+{
+  "meta": {
+    "type": "longfellow"
+  },
+  "cftOnly": {
+    "circuit": "prove_verify (age-check + CFT)",
+    "proof": {
+      "note": "ZkProof::write after one prove",
+      "serializedProofBytes": 474700
+    },
+    "publicInputs": {
+      "binaryBytes": 544,
+      "cftBytes": 288,
+      "count": 17
+    },
+    "showMessageIfProofPlusAllPublic": 475244,
+    "showMessageIfProofPlusCftOnlyCachedKeys": 474988
+  },
+  "withRevocation": {
+    "circuit": "prove_verify + CFT + packed status-list",
+    "cftBytes": 288,
+    "publicInputsBytes": 1568,
+    "byScale": [
+      {
+        "merkleDepth": 5.0,
+        "serializedProofBytes": 530444.0,
+        "revocLog2": 12
+      },
+      {
+        "merkleDepth": 9.0,
+        "serializedProofBytes": 572236.0,
+        "revocLog2": 16
+      },
+      {
+        "merkleDepth": 13.0,
+        "serializedProofBytes": 614924.0,
+        "revocLog2": 20
+      },
+      {
+        "merkleDepth": 17.0,
+        "serializedProofBytes": 662028.0,
+        "revocLog2": 24
+      }
+    ],
+    "fitVsDepth": {
+      "formula": "|pi| ≈ 10936*d + 474612 bytes  (~10.7 KB*d + 463 KB)",
+      "r2": 0.9992,
+      "maxAbsRelErrorPct": 0.3,
+      "extrapolated_2_29_d22_bytes": 715204
+    }
+  }
+}

@@ -13,6 +13,9 @@ Baby Jubjub CFT revocation throughput. C4 binding matches zk-friendly
 
 ## Setup
 
+Requires Rust 1.89 or newer for the locked dependencies. Direct and link
+decryption batches require at least two CFTs.
+
 ```bash
 cd rust/revocation
 cargo build --release

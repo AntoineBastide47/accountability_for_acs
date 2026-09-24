@@ -10,8 +10,8 @@ use light_poseidon::{Poseidon as Inner, PoseidonHasher};
 
 use crate::babyjub::Fq;
 
-/// Largest arity circom's Poseidon supports (width 17).
-const MAX_ARITY: usize = 16;
+/// Largest arity `light-poseidon` has circom parameters for (width 13).
+const MAX_ARITY: usize = light_poseidon::MAX_X5_LEN - 1;
 
 /// Lazily-built, reusable Poseidon instances, one per arity.
 ///

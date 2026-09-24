@@ -37,7 +37,7 @@ struct Args {
     #[arg(long)]
     verbose: bool,
     /// Keep per-iteration artifacts and the generated circuit outputs.
-    #[arg(long, env = "KEEP_ARTIFACTS")]
+    #[arg(long, env = "KEEP_ARTIFACTS", value_parser = clap::builder::BoolishValueParser::new())]
     keep_artifacts: bool,
     #[command(flatten)]
     iters: IterArgs,

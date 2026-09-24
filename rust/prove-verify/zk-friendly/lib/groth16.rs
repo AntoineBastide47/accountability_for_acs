@@ -9,22 +9,22 @@
 //! ```
 //!
 //! and is evaluated as a single multi-Miller loop with one final
-//! exponentiation. The key's `γ` and `δ` are kept in prepared form, so the
-//! per-proof work is the Miller loop over three pairs and nothing else.
+//! exponentiation. The key's `γ` and `δ` are kept in prepared form. Each
+//! verification computes the public-input MSM and the pairing equation.
 
 use std::path::Path;
 
 use anyhow::{bail, Context, Result};
-use ark_bn254::{Bn254, Fq, Fq2, Fr, G1Affine, G1Projective, G2Affine};
+use ark_bn254::{Bn254, Fq2, Fr, G1Affine, G1Projective, G2Affine, G2Projective};
 use ark_ec::{pairing::Pairing, AffineRepr, CurveGroup, VariableBaseMSM};
 
 type G2Prepared = <Bn254 as Pairing>::G2Prepared;
-use ark_ff::One;
+use ark_ff::{One, PrimeField};
 use serde::Deserialize;
 
-/// `["x", "y", "1"]` — an affine G1 point with the projective `Z`.
+/// `["x", "y", "z"]` — a G1 point in Jacobian coordinates.
 type JsonG1 = [String; 3];
-/// `[["x0","x1"], ["y0","y1"], ["1","0"]]` — Fq2 coordinates as `c0 + c1·u`.
+/// `[x, y, z]` — a G2 point in Jacobian coordinates, each Fq2 as `[c0, c1]`.
 type JsonG2 = [[String; 2]; 3];
 
 #[derive(Deserialize)]
@@ -42,7 +42,8 @@ struct VerifyingKeyJson {
 #[derive(Deserialize)]
 struct ProofJson {
     protocol: String,
-    curve: String,
+    /// snarkjs writes it; rapidsnark does not.
+    curve: Option<String>,
     pi_a: JsonG1,
     pi_b: JsonG2,
     pi_c: JsonG1,
@@ -64,13 +65,18 @@ pub struct Proof {
     c: G1Affine,
 }
 
-fn field(raw: &str) -> Result<Fq> {
-    raw.parse()
-        .map_err(|_| anyhow::anyhow!("{raw:?} is not a BN254 base field element"))
+fn field<F: PrimeField>(raw: &str) -> Result<F> {
+    // Parsing directly into a field reduces modulo its order. Parse the
+    // integer first so out-of-range inputs cannot alias valid field values.
+    raw.parse::<F::BigInt>()
+        .ok()
+        .and_then(F::from_bigint)
+        .with_context(|| format!("{raw:?} is not an unsigned integer below the field modulus"))
 }
 
 fn g1(raw: &JsonG1) -> Result<G1Affine> {
-    let point = G1Affine::new_unchecked(field(&raw[0])?, field(&raw[1])?);
+    let point = G1Projective::new_unchecked(field(&raw[0])?, field(&raw[1])?, field(&raw[2])?)
+        .into_affine();
     if !point.is_on_curve() {
         bail!("G1 point is not on the curve");
     }
@@ -80,18 +86,22 @@ fn g1(raw: &JsonG1) -> Result<G1Affine> {
 fn g2(raw: &JsonG2) -> Result<G2Affine> {
     let x = Fq2::new(field(&raw[0][0])?, field(&raw[0][1])?);
     let y = Fq2::new(field(&raw[1][0])?, field(&raw[1][1])?);
-    let point = G2Affine::new_unchecked(x, y);
+    let z = Fq2::new(field(&raw[2][0])?, field(&raw[2][1])?);
+    let point = G2Projective::new_unchecked(x, y, z).into_affine();
     if !point.is_on_curve() {
         bail!("G2 point is not on the curve");
+    }
+    if !point.is_in_correct_subgroup_assuming_on_curve() {
+        bail!("G2 point is not in the prime-order subgroup");
     }
     Ok(point)
 }
 
-fn check_header(protocol: &str, curve: &str) -> Result<()> {
+fn check_header(protocol: &str, curve: Option<&str>) -> Result<()> {
     if protocol != "groth16" {
         bail!("expected a groth16 artifact, got protocol {protocol:?}");
     }
-    if curve != "bn128" {
+    if let Some(curve) = curve.filter(|c| *c != "bn128") {
         bail!("expected curve bn128, got {curve:?}");
     }
     Ok(())
@@ -101,7 +111,7 @@ impl VerifyingKey {
     pub fn from_json(text: &str) -> Result<Self> {
         let json: VerifyingKeyJson =
             serde_json::from_str(text).context("parse snarkjs verification key")?;
-        check_header(&json.protocol, &json.curve)?;
+        check_header(&json.protocol, Some(&json.curve))?;
 
         let alpha = g1(&json.vk_alpha_1)?;
         let beta = g2(&json.vk_beta_2)?;
@@ -133,7 +143,7 @@ impl VerifyingKey {
 impl Proof {
     pub fn from_json(text: &str) -> Result<Self> {
         let json: ProofJson = serde_json::from_str(text).context("parse snarkjs proof")?;
-        check_header(&json.protocol, &json.curve)?;
+        check_header(&json.protocol, json.curve.as_deref())?;
         Ok(Self {
             a: g1(&json.pi_a)?,
             b: g2(&json.pi_b)?,
@@ -156,12 +166,7 @@ pub fn read_public_signals(path: &Path) -> Result<Vec<Fr>> {
 
 pub fn parse_public_signals(text: &str) -> Result<Vec<Fr>> {
     let raw: Vec<String> = serde_json::from_str(text).context("parse public signals")?;
-    raw.iter()
-        .map(|s| {
-            s.parse::<Fr>()
-                .map_err(|_| anyhow::anyhow!("{s:?} is not a BN254 scalar"))
-        })
-        .collect()
+    raw.iter().map(|s| field(s)).collect()
 }
 
 /// Checks the proof against the public signals.
@@ -189,8 +194,9 @@ pub fn verify(vk: &VerifyingKey, public_signals: &[Fr], proof: &Proof) -> Result
     Ok((product.0 * vk.alpha_beta).is_one())
 }
 
-/// Convenience for the benchmark loops: everything except the pairing check is
-/// parsing, which the JS also did outside the timer.
+/// Reads and validates proof points and public signals before verification.
+/// The presentation benchmarks exclude this work from their verify timer;
+/// the Merkle-versus-flat sweep includes it.
 pub struct ProofBundle {
     pub proof: Proof,
     pub public_signals: Vec<Fr>,
@@ -212,7 +218,7 @@ impl ProofBundle {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ark_bn254::{G1Projective, G2Affine, G2Projective};
+    use ark_bn254::Fq;
     use ark_ec::PrimeGroup;
     use ark_ff::{Field, UniformRand};
     use ark_std::rand::rngs::StdRng;
@@ -338,6 +344,22 @@ mod tests {
         assert!(verify(&vkey, &signals[..2], &proof).is_err());
     }
 
+    /// rapidsnark writes `proof.json` without the `curve` field.
+    #[test]
+    fn accepts_a_rapidsnark_proof_without_curve() {
+        let signals = [Fr::from(7u64)];
+        let (vkey_json, proof_json) = fixture(&signals);
+        let mut proof: serde_json::Value = serde_json::from_str(&proof_json).unwrap();
+        proof.as_object_mut().unwrap().remove("curve");
+        let vkey = VerifyingKey::from_json(&vkey_json).unwrap();
+        let proof = Proof::from_json(&proof.to_string()).unwrap();
+        assert!(verify(&vkey, &signals, &proof).unwrap());
+
+        let text = r#"{"protocol":"groth16","curve":"bls12381","pi_a":["1","2","1"],
+            "pi_b":[["1","2"],["3","4"],["1","0"]],"pi_c":["1","2","1"]}"#;
+        assert!(Proof::from_json(text).is_err());
+    }
+
     #[test]
     fn rejects_a_non_groth16_artifact() {
         let text = r#"{"protocol":"plonk","curve":"bn128","pi_a":["1","2","1"],
@@ -356,5 +378,108 @@ mod tests {
     fn reads_public_signals() {
         let signals = parse_public_signals(r#"["1","2","3"]"#).unwrap();
         assert_eq!(signals, [Fr::from(1u64), Fr::from(2u64), Fr::from(3u64)]);
+    }
+
+    #[test]
+    fn public_signals_must_be_in_the_scalar_field() {
+        let largest = -Fr::one();
+        let encoded = serde_json::to_string(&["0".to_string(), largest.to_string()]).unwrap();
+        assert_eq!(
+            parse_public_signals(&encoded).unwrap(),
+            [Fr::from(0), largest]
+        );
+        for invalid in ["-1".to_string(), Fr::MODULUS.to_string(), "9".repeat(100)] {
+            let encoded = serde_json::to_string(&[invalid]).unwrap();
+            assert!(parse_public_signals(&encoded).is_err());
+        }
+    }
+
+    #[test]
+    fn every_point_coordinate_must_be_in_the_base_field() {
+        assert_eq!(field::<Fq>(&(-Fq::one()).to_string()).unwrap(), -Fq::one());
+        for invalid in ["-1".to_string(), Fq::MODULUS.to_string(), "9".repeat(100)] {
+            for coordinate in 0..3 {
+                let mut point = g1_json(G1Affine::generator());
+                point[coordinate] = invalid.clone();
+                assert!(g1(&point).is_err());
+                for component in 0..2 {
+                    let mut point = g2_json(G2Affine::generator());
+                    point[coordinate][component] = invalid.clone();
+                    assert!(g2(&point).is_err());
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn parses_jacobian_coordinates_and_identity() {
+        let p = G1Affine::generator();
+        let z = Fq::from(2);
+        assert_eq!(
+            g1(&[
+                (p.x * z.square()).to_string(),
+                (p.y * z.square() * z).to_string(),
+                z.to_string(),
+            ])
+            .unwrap(),
+            p
+        );
+        let q = G2Affine::generator();
+        let z = Fq2::new(Fq::from(2), Fq::from(3));
+        let pair = |v: Fq2| [v.c0.to_string(), v.c1.to_string()];
+        assert_eq!(
+            g2(&[pair(q.x * z.square()), pair(q.y * z.square() * z), pair(z)]).unwrap(),
+            q
+        );
+        assert!(g1(&["0".into(), "1".into(), "0".into()]).unwrap().is_zero());
+        assert!(g2(&[
+            ["0".into(), "0".into()],
+            ["1".into(), "0".into()],
+            ["0".into(), "0".into()],
+        ])
+        .unwrap()
+        .is_zero());
+    }
+
+    #[test]
+    fn changing_a_proof_point_to_identity_invalidates_the_proof() {
+        let signals = [Fr::from(0)];
+        let (vkey_json, proof_json) = fixture(&signals);
+        let vkey = VerifyingKey::from_json(&vkey_json).unwrap();
+        assert!(verify(&vkey, &signals, &Proof::from_json(&proof_json).unwrap()).unwrap());
+        for name in ["pi_a", "pi_b", "pi_c"] {
+            let mut tampered: serde_json::Value = serde_json::from_str(&proof_json).unwrap();
+            tampered[name][2] = if name == "pi_b" {
+                serde_json::json!(["0", "0"])
+            } else {
+                serde_json::json!("0")
+            };
+            let proof = Proof::from_json(&tampered.to_string()).unwrap();
+            assert!(!verify(&vkey, &signals, &proof).unwrap(), "{name}");
+        }
+        let alias = serde_json::to_string(&[Fr::MODULUS.to_string()]).unwrap();
+        assert!(parse_public_signals(&alias).is_err());
+    }
+
+    #[test]
+    fn rejects_g2_points_outside_the_prime_order_subgroup() {
+        let point = (0..100)
+            .filter_map(|i| {
+                G2Affine::get_point_from_x_unchecked(Fq2::new(Fq::from(i), Fq::one()), false)
+            })
+            .find(|p| !p.is_in_correct_subgroup_assuming_on_curve())
+            .expect("an on-curve point outside the subgroup");
+        assert!(point.is_on_curve());
+        let encoded = g2_json(point);
+        assert!(g2(&encoded).is_err());
+        let (vkey_json, proof_json) = fixture(&[Fr::from(1)]);
+        let mut proof: serde_json::Value = serde_json::from_str(&proof_json).unwrap();
+        proof["pi_b"] = serde_json::json!(encoded);
+        assert!(Proof::from_json(&proof.to_string()).is_err());
+        for name in ["vk_beta_2", "vk_gamma_2", "vk_delta_2"] {
+            let mut key: serde_json::Value = serde_json::from_str(&vkey_json).unwrap();
+            key[name] = serde_json::json!(encoded);
+            assert!(VerifyingKey::from_json(&key.to_string()).is_err(), "{name}");
+        }
     }
 }

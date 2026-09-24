@@ -24,7 +24,7 @@ const DEPTH_AT_2_29: f64 = 22.0;
 #[command(about = "Communication-cost report for the Longfellow stack")]
 struct Args {
     /// Revocation population scales as log2, passed through to the measure script.
-    #[arg(long, env = "REVOC_LOG2_LIST", value_delimiter = ',', default_values_t = [12u32, 16, 20, 24])]
+    #[arg(long, env = if std::env::var_os("REVOC_LOG2_LIST").is_some() { "REVOC_LOG2_LIST" } else { "REVOC_LOG2" }, value_delimiter = ',', default_values_t = [12u32, 16, 20, 24])]
     revoc_log2: Vec<u32>,
     /// Output directory; relative paths resolve against the stack root.
     #[arg(long, env = "ARTIFACTS_DIR")]

@@ -5,7 +5,7 @@
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
-use anyhow::{bail, Result};
+use anyhow::{bail, ensure, Result};
 use ark_ec::CurveGroup;
 use ark_ff::Field;
 use rand::seq::SliceRandom;
@@ -74,13 +74,19 @@ pub struct Batch {
 
 /// Builds `n` CFTs, of which `recurring_pct` (at least the PID threshold) share
 /// one identity. `C4 = EdDSA(poseidon(t, D2))` under that identity's key.
+/// Requires at least two CFTs and a recurring fraction in `0..=1`.
 pub fn build_batch<R: Rng + ?Sized>(
     poseidon: &Poseidon,
     pk_ag: Point,
     n: usize,
     recurring_pct: f64,
     rng: &mut R,
-) -> Batch {
+) -> Result<Batch> {
+    ensure!(n >= 2, "CFT batch size must be at least 2, got {n}");
+    ensure!(
+        (0.0..=1.0).contains(&recurring_pct),
+        "recurring fraction must be in 0..=1, got {recurring_pct}"
+    );
     let pid_threshold = usize::max(2, (n as f64 * 0.1).ceil() as usize);
     let n_recurring = usize::max((n as f64 * recurring_pct).round() as usize, pid_threshold);
     let n_unique = n - n_recurring;
@@ -89,7 +95,7 @@ pub fn build_batch<R: Rng + ?Sized>(
     let recurring_id = recurring.public_key();
 
     let mut slots: Vec<(Point, SecretKey)> = Vec::with_capacity(n);
-    slots.extend(std::iter::repeat((recurring_id, recurring)).take(n_recurring));
+    slots.extend(std::iter::repeat_n((recurring_id, recurring), n_recurring));
     slots.extend((0..n_unique).map(|_| {
         let sk = SecretKey::rand(rng);
         (sk.public_key(), sk)
@@ -113,13 +119,13 @@ pub fn build_batch<R: Rng + ?Sized>(
         })
         .collect();
 
-    Batch {
+    Ok(Batch {
         cfts,
         n_recurring,
         n_unique,
         recurring_pct,
         pid_threshold,
-    }
+    })
 }
 
 /// Wall-clock breakdown of one scenario, in the phases the paper reports.
@@ -336,13 +342,58 @@ mod tests {
         let keys = Keys::generate(&mut rng);
 
         for pct in [0.1, 0.5] {
-            let batch = build_batch(&poseidon, keys.pk_ag, 40, pct, &mut rng);
+            let batch = build_batch(&poseidon, keys.pk_ag, 40, pct, &mut rng).unwrap();
             let direct = bench_direct_decrypt(&poseidon, &batch, &keys).unwrap();
             assert_eq!(direct.n_after_filter, 40);
             assert_eq!(direct.link, Duration::ZERO);
 
             let linked = bench_link_decrypt(&poseidon, &batch, &keys, &mut rng).unwrap();
             assert_eq!(linked.n_after_filter, batch.n_recurring);
+        }
+    }
+
+    #[test]
+    fn rejects_invalid_batch_parameters() {
+        let mut rng = StdRng::seed_from_u64(42);
+        let poseidon = Poseidon::new();
+        let keys = Keys::generate(&mut rng);
+        for n in [0, 1] {
+            let error = build_batch(&poseidon, keys.pk_ag, n, 0.1, &mut rng)
+                .err()
+                .unwrap();
+            assert!(error.to_string().contains("at least 2"));
+        }
+        for pct in [-0.1, 1.1, f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+            let error = build_batch(&poseidon, keys.pk_ag, 2, pct, &mut rng)
+                .err()
+                .unwrap();
+            assert!(error.to_string().contains("fraction must be in 0..=1"));
+        }
+    }
+
+    #[test]
+    fn both_strategies_open_the_minimum_batch() {
+        let mut rng = StdRng::seed_from_u64(42);
+        let poseidon = Poseidon::new();
+        let keys = Keys::generate(&mut rng);
+        for pct in [0.0, 0.1, 1.0] {
+            let batch = build_batch(&poseidon, keys.pk_ag, 2, pct, &mut rng).unwrap();
+            assert_eq!(batch.cfts.len(), 2);
+            assert_eq!(batch.pid_threshold, 2);
+            assert_eq!(batch.n_recurring, 2);
+            assert_eq!(batch.n_unique, 0);
+            assert_eq!(
+                bench_direct_decrypt(&poseidon, &batch, &keys)
+                    .unwrap()
+                    .n_after_filter,
+                2
+            );
+            assert_eq!(
+                bench_link_decrypt(&poseidon, &batch, &keys, &mut rng)
+                    .unwrap()
+                    .n_after_filter,
+                2
+            );
         }
     }
 }

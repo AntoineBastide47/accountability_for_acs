@@ -1,0 +1,2 @@
+benchmark,t1_ms_per_input_cft,t2_ms_per_after_filter_cft,formula,n_samples
+direct-decrypt,0.530045,0.000000,t_total_ms ≈ 0.5300·set_size,90

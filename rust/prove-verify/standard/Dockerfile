@@ -1,4 +1,5 @@
-# Build: cd rust/prove-verify/standard && docker build -t standard-bench-rs -f Dockerfile .
+# Build (from the repository root; see below):
+#   docker build -t standard-bench-rs -f rust/prove-verify/standard/Dockerfile .
 #
 #   docker run --rm --cpus=2 --memory=4g --memory-swap=4g standard-bench-rs \
 #     bash -lc 'cd /bench && ./target/release/bench_prove_verify >/tmp/log 2>&1 \

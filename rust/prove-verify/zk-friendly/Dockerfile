@@ -11,7 +11,7 @@
 # On Apple Silicon, Docker builds linux/arm64 natively and rapidsnark is compiled
 # with ARM assembly (same class of optimizations as a phone wallet prover).
 # On amd64, the x86_64 host build is used (also USE_ASM=ON by default).
-FROM rust:1-bullseye
+FROM rust:1-bookworm
 
 WORKDIR /bench
 

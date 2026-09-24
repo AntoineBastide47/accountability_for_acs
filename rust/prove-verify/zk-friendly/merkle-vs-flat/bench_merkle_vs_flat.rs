@@ -46,10 +46,16 @@ struct Args {
     n: usize,
     #[arg(long)]
     verbose: bool,
+    /// Compatibility flag; quiet output is already the default.
+    #[arg(long)]
+    quiet: bool,
+    /// Hide per-point sample statistics.
+    #[arg(long)]
+    compact: bool,
     /// Remove generated circuits and artifacts before the sweep.
-    #[arg(long, env = "CLEAN")]
+    #[arg(long, env = "CLEAN", value_parser = clap::builder::BoolishValueParser::new())]
     clean: bool,
-    #[arg(long, env = "KEEP_ARTIFACTS")]
+    #[arg(long, env = "KEEP_ARTIFACTS", value_parser = clap::builder::BoolishValueParser::new())]
     keep_artifacts: bool,
 }
 
@@ -427,7 +433,7 @@ fn bench_point(
         }
     }
 
-    if args.verbose {
+    if args.verbose && !args.compact {
         stats::print_stats(&format!("{label} witness"), &witness_ms);
         stats::print_stats(&format!("{label} prove"), &prove_ms);
         stats::print_stats(&format!("{label} verify"), &verify_ms);
@@ -492,6 +498,13 @@ fn remove_generated_circuits(base_dir: &Path) {
 
 fn main() -> Result<()> {
     let args = Args::parse();
+    // A Merkle inclusion proof needs a power-of-two leaf count and depth >= 1.
+    if let Some(n) = args.totals.iter().find(|n| **n < 2 || !n.is_power_of_two()) {
+        bail!("TOTAL_ATTRS entries must be powers of two >= 2, got {n}");
+    }
+    if args.used.contains(&0) {
+        bail!("USED_ATTRS entries must be >= 1");
+    }
     let base_dir = paths::bench_dir("merkle-vs-flat");
     let artifacts_dir = base_dir.join("artifacts_bench_merkle_vs_flat");
     let generated_dir = base_dir.join("generated");

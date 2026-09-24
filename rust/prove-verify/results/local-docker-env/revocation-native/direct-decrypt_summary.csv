@@ -1,0 +1,10 @@
+benchmark,set_size,recurring_pct,runs,pid_threshold,n_after_filter_mean,t_total_mean_ms,t_total_std_ms,t_link_mean_ms,t_decrypt_mean_ms,t_per_input_cft_mean_ms
+direct-decrypt,10,10,10,2,10,6.338,1.422,0.000,6.338,0.6338
+direct-decrypt,20,10,10,2,20,10.585,0.211,0.000,10.585,0.5293
+direct-decrypt,50,10,10,5,50,26.681,0.240,0.000,26.681,0.5336
+direct-decrypt,100,10,10,10,100,52.933,0.406,0.000,52.933,0.5293
+direct-decrypt,500,10,10,50,500,265.717,1.490,0.000,265.717,0.5314
+direct-decrypt,1000,10,10,100,1000,531.113,1.317,0.000,531.113,0.5311
+direct-decrypt,2000,10,10,200,2000,1059.610,1.892,0.000,1059.610,0.5298
+direct-decrypt,4000,10,10,400,4000,2121.459,4.222,0.000,2121.459,0.5304
+direct-decrypt,8000,10,10,800,8000,4239.661,7.218,0.000,4239.661,0.5300

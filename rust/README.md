@@ -26,6 +26,9 @@ independent `package.json` files, so each can still be built and Dockerized on
 its own. Every binary's source stays in the directory its JavaScript
 counterpart occupied, via explicit `[[bin]] path` entries.
 
+The locked dependencies require Rust 1.85 or newer for `standard`, and Rust
+1.89 or newer for `zk-friendly` and `revocation`.
+
 ```bash
 cd rust/revocation              && cargo build --release && cargo test --release
 cd rust/prove-verify/zk-friendly && cargo build --release && cargo test --release
@@ -95,10 +98,15 @@ files against the ones checked into the JavaScript tree.
   original — that is the point of the port.
 - `prove-verify/standard/` only launches the unchanged C++ binaries and reads
   their JSON, so its numbers are directly comparable.
-- `prove-verify/zk-friendly/` still shells out to `circom` and rapidsnark, so
-  `witness` and `prove` stay comparable. `verify` is now a Rust Groth16
-  verifier rather than snarkjs, so that one column measures a different
-  implementation by construction.
+- `prove-verify/zk-friendly/` uses the same external witness calculator and
+  rapidsnark prover. The presentation benchmarks' `witness` time also includes
+  input preparation, signing and JSON output, which now run in Rust. The
+  Merkle-versus-flat sweep excludes input preparation from its witness timer.
+  `prove` still measures rapidsnark. `verify` measures the Rust Groth16 verifier,
+  including the public-input MSM and pairing equation. The sweep also includes
+  proof and public-input parsing and validation in `verify`; the presentation
+  benchmarks exclude that work. Both `witness` and `verify` need these timing
+  boundaries taken into account when comparing Rust and Node results.
 
 Two Node-only knobs disappeared with the runtime: `BENCH_GC_BEFORE_VERIFY` and
 the `gcAvailable` summary field both described V8's garbage collector.

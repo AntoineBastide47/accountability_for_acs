@@ -10,6 +10,8 @@ original checkout at `../../../prove-verify/standard/longfellow-zk`.
 
 ## Setup
 
+Requires Rust 1.85 or newer for the locked dependencies.
+
 ```bash
 cd prove-verify/standard/longfellow-zk        # the original, vendored tree
 cmake -S lib -B clang-build-release -DCMAKE_BUILD_TYPE=Release
@@ -36,19 +38,25 @@ the Node stack's invocations still work.
 
 | Env | Flag | Default | Meaning |
 |-----|------|---------|---------|
-| `BENCH_N` | `--repetitions` / `--n` | `10` | Outer samples |
+| `BENCH_N` / `BENCH_REPETITIONS` | `--repetitions` / `--n` | `10` | Outer samples; `BENCH_N` takes precedence |
 | `BENCH_ITERATIONS` | `--iterations` | `1` | Inner iterations; `auto`/`0` = adaptive |
 | `BENCH_MIN_TIME` | `--min_time` | `0.05s` | Google Benchmark `--benchmark_min_time` |
 | `BENCH_FILTER` | `--filter` | per benchmark | Google Benchmark filter regex |
 | `BENCH_METRIC` | `--metric` | `both` | `--verbose` timing column |
 | `BENCH_WARMUP` | — | on | `0`/`false`/`no` skips the discarded repetition |
 | `ARTIFACTS_DIR` | `--out-dir` | per benchmark | Summary directory |
-| `REVOC_LOG2_LIST` | `--revoc-log2` | `12,16,20,24` | Revocation population scales |
+| `REVOC_LOG2_LIST` / `REVOC_LOG2` | `--revoc-log2` | `12,16,20,24` | Revocation population scales; `REVOC_LOG2_LIST` takes precedence |
 | `TOTAL_ATTRS` | `--total-attrs` / `--attr` | `8,16,32,64` | merkle-vs-flat: credential sizes \(n\) |
 | `USED_ATTRS` | `--used-attrs` / `--used-attr` | `1,2,4,8,16` | merkle-vs-flat: disclosed counts \(k\) (skipped when \(k>n\)) |
 | `LONGFELLOW_ROOT` | — | search | The Longfellow C++ tree |
 | `LONGFELLOW_*_BENCH_BIN` | `--bin` | build path | Benchmark binary |
 | `STANDARD_ROOT` | — | crate dir | Overrides where benchmark folders are looked up |
+
+Relative `ARTIFACTS_DIR` paths resolve against the stack root. Relative
+`--out-dir` paths resolve against the working directory and override the
+environment. Boolean environment options accept `1`/`0` and `true`/`false`.
+The presentation and Merkle-versus-flat drivers accept `--quiet` as a
+compatibility flag; quiet output is already the default.
 
 | Folder | Role |
 |--------|------|

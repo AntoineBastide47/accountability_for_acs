@@ -106,8 +106,8 @@ fn build_batch<R: Rng + ?Sized>(poseidon: &Poseidon, pk_ag: Point, n: usize, rng
     let id_b = base8() * rand_scalar(rng);
 
     let mut slots: Vec<Point> = Vec::with_capacity(n);
-    slots.extend(std::iter::repeat(id_a).take(n_a));
-    slots.extend(std::iter::repeat(id_b).take(n_b));
+    slots.extend(std::iter::repeat_n(id_a, n_a));
+    slots.extend(std::iter::repeat_n(id_b, n_b));
     slots.extend((0..n_unique).map(|_| base8() * rand_scalar(rng)));
     slots.shuffle(rng);
 

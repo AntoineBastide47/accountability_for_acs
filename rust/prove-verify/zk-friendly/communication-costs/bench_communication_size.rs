@@ -30,7 +30,7 @@ const DEPTH_AT_2_29: f64 = 22.0;
 #[derive(Parser)]
 #[command(about = "Communication-cost report for the Circom / Groth16 stack")]
 struct Args {
-    #[arg(long, env = "REVOC_LOG2_LIST", value_delimiter = ',', default_values_t = [12u32, 16, 20, 24])]
+    #[arg(long, env = if std::env::var_os("REVOC_LOG2_LIST").is_some() { "REVOC_LOG2_LIST" } else { "REVOC_LOG2" }, value_delimiter = ',', default_values_t = [12u32, 16, 20, 24])]
     revoc_log2: Vec<u32>,
     /// Output directory; relative paths resolve against the stack root.
     #[arg(long, env = "ARTIFACTS_DIR")]
@@ -278,6 +278,7 @@ fn measure_revocation(scales: &[u32]) -> Result<Revocation> {
         &[
             ("BENCH_N", "1".into()),
             ("BENCH_WARMUP", "0".into()),
+            ("KEEP_ARTIFACTS", "1".into()),
             (
                 "REVOC_LOG2_LIST",
                 scales

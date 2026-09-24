@@ -29,7 +29,7 @@ use zk_friendly::poseidon::Poseidon;
 use zk_friendly::stats::{self, Summary};
 use zk_friendly::summary;
 use zk_friendly::time::{self, elapsed_ms};
-use zk_friendly::zk_common::{Groth16Spec, IterArgs, Toolchain};
+use zk_friendly::zk_common::{self, Groth16Spec, IterArgs, Toolchain};
 
 const PTAU: &str = "../powersOfTau/powersOfTau28_hez_final_19.ptau";
 
@@ -37,7 +37,7 @@ const PTAU: &str = "../powersOfTau/powersOfTau28_hez_final_19.ptau";
 #[command(about = "Groth16 prove/verify benchmark for CFT + packed status-list revocation")]
 struct Args {
     /// Population scales as log2, e.g. `12,16,20,24`.
-    #[arg(long, env = "REVOC_LOG2_LIST", value_delimiter = ',', default_values_t = [12u32, 16, 20, 24])]
+    #[arg(long, env = if std::env::var_os("REVOC_LOG2_LIST").is_some() { "REVOC_LOG2_LIST" } else { "REVOC_LOG2" }, value_delimiter = ',', default_values_t = [12u32, 16, 20, 24])]
     revoc_log2: Vec<u32>,
     /// Status-list bits packed into one Merkle leaf.
     #[arg(long, env = "REVOC_BITS_PER_LEAF", default_value_t = 253)]
@@ -47,6 +47,9 @@ struct Args {
     revoc_slot: usize,
     #[command(flatten)]
     iters: IterArgs,
+    /// Keep per-iteration inputs, witnesses and proofs.
+    #[arg(long, env = "KEEP_ARTIFACTS", value_parser = clap::builder::BoolishValueParser::new())]
+    keep_artifacts: bool,
     /// Print setup sections instead of per-iteration lines.
     #[arg(long)]
     verbose: bool,
@@ -302,6 +305,10 @@ fn main() -> Result<()> {
     let mut by_scale = Vec::with_capacity(args.revoc_log2.len());
     for &revoc_log2 in &args.revoc_log2 {
         by_scale.push(bench_scale(&ctx, revoc_log2, &mut rng)?);
+        // Keep only one scale's per-iteration files on disk (about 2 MB each).
+        if !args.keep_artifacts {
+            zk_common::clean_artifacts_keep_summaries(&artifacts_dir);
+        }
     }
 
     println!("\n── Summary (avg prover ms) ──");

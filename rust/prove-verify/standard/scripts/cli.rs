@@ -64,7 +64,7 @@ pub struct Common {
     #[arg(
         long = "repetitions",
         visible_alias = "n",
-        env = "BENCH_N",
+        env = if std::env::var_os("BENCH_N").is_some() { "BENCH_N" } else { "BENCH_REPETITIONS" },
         default_value_t = 10
     )]
     pub repetitions: usize,
@@ -89,16 +89,20 @@ pub struct Common {
     #[arg(long)]
     pub compact: bool,
 
+    /// Compatibility flag; quiet output is already the default.
+    #[arg(long)]
+    pub quiet: bool,
+
     /// Keep the artifact directory instead of reporting it as cleaned.
-    #[arg(long, env = "KEEP_ARTIFACTS")]
+    #[arg(long, env = "KEEP_ARTIFACTS", value_parser = clap::builder::BoolishValueParser::new())]
     pub keep_artifacts: bool,
 
     /// Remove the artifact directory before the run.
-    #[arg(long, env = "CLEAN")]
+    #[arg(long, env = "CLEAN", value_parser = clap::builder::BoolishValueParser::new())]
     pub clean: bool,
 
-    /// Summary directory; relative paths resolve against the stack root.
-    #[arg(long = "out-dir", env = "ARTIFACTS_DIR")]
+    /// Summary directory relative to the working directory; ARTIFACTS_DIR is relative to the stack root.
+    #[arg(long = "out-dir")]
     pub out_dir: Option<PathBuf>,
 }
 

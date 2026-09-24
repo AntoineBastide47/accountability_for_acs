@@ -1,0 +1,77 @@
+{
+  "meta": {
+    "type": "longfellow",
+    "revocLog2List": [
+      12,
+      16,
+      20,
+      24
+    ],
+    "bitsPerLeaf": 253,
+    "benchN": 10,
+    "warmup": 1,
+    "timestampIso": "2026-09-23T12:36:27.156Z"
+  },
+  "byScale": [
+    {
+      "revocLog2": 12,
+      "population": 4096,
+      "merkleDepth": 5,
+      "verify": {
+        "min": 1356.607042,
+        "max": 1717.366251,
+        "avg": 1497.0842343
+      },
+      "proverTotal": {
+        "min": 1662.330626,
+        "max": 2230.613335,
+        "avg": 1862.3156674999998
+      }
+    },
+    {
+      "revocLog2": 16,
+      "population": 65536,
+      "merkleDepth": 9,
+      "verify": {
+        "min": 1628.422834,
+        "max": 4675.43246,
+        "avg": 2097.9708799
+      },
+      "proverTotal": {
+        "min": 1979.072584,
+        "max": 4791.661669,
+        "avg": 2481.3810758
+      }
+    },
+    {
+      "revocLog2": 20,
+      "population": 1048576,
+      "merkleDepth": 13,
+      "verify": {
+        "min": 2007.762751,
+        "max": 2130.774168,
+        "avg": 2068.7139303
+      },
+      "proverTotal": {
+        "min": 2360.734959,
+        "max": 2525.542042,
+        "avg": 2409.6692426
+      }
+    },
+    {
+      "revocLog2": 24,
+      "population": 16777216,
+      "merkleDepth": 17,
+      "verify": {
+        "min": 2240.935251,
+        "max": 2461.744418,
+        "avg": 2339.4491220000004
+      },
+      "proverTotal": {
+        "min": 2627.344418,
+        "max": 2899.159709,
+        "avg": 2756.8907639
+      }
+    }
+  ]
+}
